@@ -41,8 +41,11 @@ stock = {
     "Born To Run": Album("Born To Run", "Bruce Springsteen", 10, 0)
     }
 
+# Constants for code
+MAX_RESTOCK_LIMIT = 50
+MIN_RESTOCK_LIMIT = 1
 
-class AlbumGUI:        
+class AlbumGUI:
     """Setting up GUI structure to manage stock records"""
 
     def __init__(self, root):
@@ -73,7 +76,7 @@ class AlbumGUI:
         # Total stock label
         self.total_stock_label = Label(root, text="")
         self.total_stock_label.pack()
-        
+
         # Total sold label
         self.total_sold_label = Label(root, text="")
         self.total_sold_label.pack()
@@ -88,27 +91,23 @@ class AlbumGUI:
 
     def get_entry(self):
         """Get user input from entry box"""
-
         return self.entry_box.get().title().strip()
 
 
     def show_output(self, text):
         """Display text in output area"""
-
-        self.output_text.delete("1.0", END) # Clear box before adding new text
+        self.output_text.delete("1.0", END)  # Clear box before adding new text
         self.output_text.insert(END, text)
 
 
     def show_total_stock(self):
         """Display and update total stock"""
-
         # Total number of album copies
         total_stock = 0
 
         # Loop through album values
         for album in stock.values():
-            total_stock += int(album.amount_of_copies) # Add amount_of_copies to total_sold
-
+            total_stock += album.get_total_stock()  # Add get_total_stock() to total_sold
 
         # Update total_stock_label with total_stock using config
         self.total_stock_label.config(text=f"Total Stock: {total_stock}")
@@ -116,63 +115,105 @@ class AlbumGUI:
 
     def show_total_sold(self):
         """Display total amount sold"""
-        
         # Total number of album copies sold
         total_sold = 0
 
         # Loop through album values
         for album in stock.values():
-            total_sold += int(album.sold) # Add sold to total_sold
+            total_sold += album.get_total_sold()  # Add get_total_sold() to total_sold
 
-        # Update total_sold_label with total_sold using config 
+        # Update total_sold_label with total_sold using config
         self.total_sold_label.config(text=f"Total Sold: {total_sold}")
 
 
     def show_albums(self):
         """Display album with information"""
-        
         album_list = "Please select an album:\n\n"
 
         # Loop through album values
         for album in stock.values():
-            album_list += album.get_info() + "\n\n" # Add get _info to album list
+            album_list += album.get_info() + "\n\n"  # Add get_info() to album list
 
         # Print album list using show_output
         self.show_output(album_list)
-        
-  
+
+
     def checkout_album(self):
         """Shows stock and allows user to choose and checkout an album"""
-
         # Get user input
         album_name = self.get_entry()
 
-        
+        # Check if album is in stock dictionary
         if album_name in stock:
-            album = stock[album_name] # Get album from stock
+            album = stock[album_name]  # Get album from stock
 
-            if album.amount_of_copies > 0: # Ensure the album is in stock
+            if album.get_total_stock() > 0:  # Ensure the album is in stock
                 album.amount_of_copies -= 1
                 album.sold += 1
 
-                # Show success and remaining stock
-                self.show_output(f"Checkout successful!\n\nRemaining stock: {album.amount_of_copies}")
+                # Show success message and remaining stock using get_total_stock()
+                self.show_output(
+                    f"Checkout successful!\n\nRemaining stock: {album.get_total_stock()}"
+                )
 
                 # Update total stock and sold
                 self.show_total_stock()
                 self.show_total_sold()
-                       
+
             else:
                 self.show_output("Sorry, out of stock!")
-            
+
         else:
-            self.show_output("Please choose an album that is in our stock.\n")                
+            self.show_output("Please choose an album that is in our stock.\n")
 
 
     def restock_album(self):
         """Allows user to choose and restock an album"""
+        # Get user entry
+        input_data = self.get_entry()
+        parts = [p.strip() for p in input_data.split(',')]  # Split input string by commas
 
-        
+        # Rebuild album name until we reach restock amount
+        album_name_parts = []
+        while parts and not parts[0].isdigit():  # Keep taking parts until restock amount found
+            album_name_parts.append(parts.pop(0))
+        album_name = " ".join(album_name_parts)  # reconstruct album name
+
+        if not parts:
+            self.show_output("Please include a restock amount. (album,restock amount)")
+            return
+
+        restock_amount_str = parts.pop(0)  # Get restock amount as a string
+
+        if not restock_amount_str.isdigit():  # Make sure it is a number
+            self.show_output("Please use a number for restock amount.")
+            return
+
+        restock_amount = int(restock_amount_str)  # Convert to integer
+
+        # Check if album is in stock dictionary
+        if album_name in stock:
+            album = stock[album_name]  # Get album from stock
+
+            if MAX_RESTOCK_LIMIT >= restock_amount >= MIN_RESTOCK_LIMIT:  # set reasonable boundaries with constants
+                album.amount_of_copies += restock_amount
+
+                # Show success message and new stock number using get_total_stock()
+                self.show_output(
+                    f"Restock Successful!\n\nAlbum: {album_name}\nNew stock:{album.get_total_stock()}"
+                )
+
+                # Update total stock and sold
+                self.show_total_stock()
+                self.show_total_sold()
+
+            else:
+                self.show_output(
+                    f"Please input a reasonable number to restock ({MIN_RESTOCK_LIMIT} to {MAX_RESTOCK_LIMIT})"
+                )
+
+        else:
+            self.show_output("Please choose an album that is in our stock.\n")
 
 
 if __name__ == "__main__":
