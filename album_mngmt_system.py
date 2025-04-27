@@ -53,33 +53,32 @@ class AlbumGUI:
 
         self.root = root
         self.root.title("Album Management")
-        self.root.geometry("600x600")
-
+        self.root.geometry("560x230+200+200")
+        self.root.configure(bg='#001d3e')
+        
         # Entry input & label
-        self.entry_label = Label(root, text="Input:")
-        self.entry_label.pack()
-        self.entry_box = Entry(root)
-        self.entry_box.pack()
+        self.entry_label = Label(root, text="Input:", anchor="w", bg='#001d3e', fg='#ff97cc', font=('comic sans ms', 13, 'bold'))
+        self.entry_label.grid(row=0, column=0, pady=10, padx=10, sticky=E+W)
+        self.entry_box = Entry(root, bg='#ff97cc')
+        self.entry_box.grid(row=0, column=2, pady=10, padx=10, sticky=E+W)
 
         # Output display area
-        self.output_text = Text(root, height=30, width=50)
-        self.output_text.pack()
+        self.output_text = Text(root, height=10, width=50, bg='#ff97cc')
+        self.output_text.grid(row=1, column=2, rowspan=5, padx=10, sticky=N+S+E+W)
 
         # Checkout, restock & show buttons
-        self.btn1 = Button(root, text="Checkout Album", command=self.checkout_album)
-        self.btn1.pack()
-        self.btn2 = Button(root, text="Restock Album", command=self.restock_album)
-        self.btn2.pack()
-        self.btn3 = Button(root, text="Show Albums", command=self.show_albums)
-        self.btn3.pack()
+        self.btn1 = Button(root, text="Checkout Album", bg='#ff97cc', fg='#001d3e', command=self.checkout_album, font=('comic sans ms', 10, 'bold'))
+        self.btn1.grid(row=1, column=0, padx=10, sticky=E+W)
+        self.btn2 = Button(root, text="Restock Album", bg='#ff97cc', fg='#001d3e', command=self.restock_album, font=('comic sans ms', 10, 'bold'))
+        self.btn2.grid(row=2, column=0, padx=10, sticky=E+W)
+        self.btn3 = Button(root, text="Show Albums", bg='#ff97cc', fg='#001d3e', command=self.show_albums, font=('comic sans ms', 10, 'bold'))
+        self.btn3.grid(row=3, column=0, padx=10, sticky=E+W)
 
-        # Total stock label
-        self.total_stock_label = Label(root, text="")
-        self.total_stock_label.pack()
-
-        # Total sold label
-        self.total_sold_label = Label(root, text="")
-        self.total_sold_label.pack()
+        # Total stock and sold labels
+        self.total_stock_label = Label(root, text="", anchor="w", bg='#001d3e', fg='#ff97cc', font=('comic sans ms', 10, 'bold'))
+        self.total_stock_label.grid(row=4, column=0, padx=10, sticky=E+W)
+        self.total_sold_label = Label(root, text="", anchor="w", bg='#001d3e', fg='#ff97cc', font=('comic sans ms', 10, 'bold'))
+        self.total_sold_label.grid(row=5, column=0, padx=10, sticky=E+W)
 
         # Show totals at start
         self.show_total_stock()
@@ -128,7 +127,7 @@ class AlbumGUI:
 
     def show_albums(self):
         """Display album with information"""
-        album_list = "Please select an album:\n\n"
+        album_list = "Inventory:\n\n"
 
         # Loop through album values
         for album in stock.values():
