@@ -41,6 +41,7 @@ stock = {
     }
 
 # Constants for code
+MAX_STOCK_LIMIT = 50
 MAX_RESTOCK_LIMIT = 50
 MIN_RESTOCK_LIMIT = 1
 
@@ -162,7 +163,7 @@ class AlbumGUI:
                 # Show success message and stock using get_total_stock
                 self.show_output(
                     f"Checkout successful!\n\n"
-                    f"Remaining stock: {album.get_total_stock()}"
+                    f"{album.get_info()}"
                 )
 
                 # Update total stock and sold
@@ -170,7 +171,7 @@ class AlbumGUI:
                 self.show_total_sold()
 
             else:
-                self.show_output("Sorry, out of stock!")
+                self.show_output(f"Sorry, {album_name} is out of stock!")
 
         else:
             self.show_output("Please choose an album that is in our stock.\n")
@@ -179,6 +180,13 @@ class AlbumGUI:
         """Allow user to choose and restock an album."""
         # Get user entry
         input_data = self.get_entry()
+
+        if input_data == "":  # Ensure data was entered
+            self.show_output(
+                "Please enter the album and restock amount in this format:\n"
+                "\nalbum name,restock amount"
+                )
+            return
 
         # Split input string by commas
         parts = [p.strip() for p in input_data.split(',')]
@@ -193,7 +201,8 @@ class AlbumGUI:
 
         if not parts:
             self.show_output(
-                "Please include a restock amount. (album,restock amount)"
+                "Please include a restock amount."
+                "\n(album name,restock amount)"
                 )
             return
 
@@ -211,17 +220,34 @@ class AlbumGUI:
 
             # set reasonable boundaries with constants
             if MAX_RESTOCK_LIMIT >= restock_amount >= MIN_RESTOCK_LIMIT:
-                album.amount_of_copies += restock_amount
 
-                # Show success message and stock number using get_total_stock
-                self.show_output(
-                    f"Restock Successful!\n\nAlbum: {album_name}\n"
-                    f"New stock:{album.get_total_stock()}"
-                )
+                # Ensure album copies are within MAX_STOCK_LIMIT
+                if MAX_STOCK_LIMIT < album.amount_of_copies + restock_amount:
 
-                # Update total stock and sold
-                self.show_total_stock()
-                self.show_total_sold()
+                    # Calculate max restock number allowed
+                    max_restock = MAX_STOCK_LIMIT - album.amount_of_copies
+
+                    # Show max limit reached message and max restock allowed
+                    self.show_output(
+                        f"Maximum of {MAX_STOCK_LIMIT} copies per album.\n\n"
+                        f"{album_name} has {album.get_total_stock()} in stock."
+                        f"\nYou are able to restock {max_restock} copies."
+                        f"\n\nPlease enter an amount between:\n"
+                        f"{MIN_RESTOCK_LIMIT} to {max_restock}."
+                        )
+
+                else:
+                    album.amount_of_copies += restock_amount
+
+                    # Show success message and stock num using get_total_stock
+                    self.show_output(
+                        f"Restock Successful!\n"
+                        f"{album.get_info()}"
+                    )
+
+                    # Update total stock and sold
+                    self.show_total_stock()
+                    self.show_total_sold()
 
             else:
                 self.show_output(
